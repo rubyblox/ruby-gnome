@@ -6,6 +6,9 @@
 *.yardoc
 .emacs.desktop
 .emacs.desktop.lock
+*~
+.#*
+*#
 Makefile
 Makefile.lib
 *.pc
