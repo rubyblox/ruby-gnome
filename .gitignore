@@ -31,7 +31,7 @@ mkmf.log
 */tmp/
 */vendor/
 */pkg/
-*/yard_docs/
+yard_docs
 .gdb_history
 /dist/
 /misc/release.rb
