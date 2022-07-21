@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 #
-# Copyright (C) 2013-2021  Ruby-GNOME Project Team
+# Copyright (C) 2013-2022  Ruby-GNOME Project Team
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -26,17 +26,12 @@ run_test(__dir__,
            "cairo-gobject",
            "gdk_pixbuf2",
            "gio2",
+           "pango",
            "gdk4",
            "gtk4",
-         ]) do
-  begin
-    require "gtk4"
-  rescue GObjectIntrospection::RepositoryError
-    puts("Omit because typelib file doesn't exist: #{$!.message}")
-    exit(true)
-  end
-
-  Gtk.init
-
+         ]) do |context|
+  ENV["GTK4_FIXTURE_DIR"] = context[:build_fixture_dir]
   require_relative "gtk-test-utils"
+
+  GLib.application_name = "gtk4-test"
 end
