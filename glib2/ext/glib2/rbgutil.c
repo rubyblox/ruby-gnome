@@ -47,6 +47,25 @@ rbg_define_method(VALUE klass, const char *name, VALUE (*func)(ANYARGS), int arg
 }
 
 void
+rbg_define_private_method(VALUE klass,
+                          const char *name,
+                          VALUE (*func)(ANYARGS),
+                          int argc)
+{
+    rb_define_private_method(klass, name, func, argc);
+    if ((argc != 1) || strncmp(name, "set_", 4))
+        return;
+
+    name += 4;
+    rb_funcall(klass, rbgutil_id_module_eval, 3,
+               CSTR2RVAL_FREE(g_strdup_printf("def %s=(val); set_%s(val); val; end\n"
+                                              "private :%s=\n",
+                                              name, name, name)),
+               rb_str_new2(__FILE__),
+               INT2NUM(__LINE__));
+}
+
+void
 rbg_define_singleton_method(VALUE obj, const char *name, VALUE (*func)(ANYARGS), int argc)
 {
     rb_define_singleton_method(obj, name, func, argc);
@@ -84,7 +103,7 @@ rbgutil_set_properties(VALUE self, VALUE hash)
 VALUE
 rbgutil_def_setters(VALUE klass)
 {
-    return rb_funcall(mGLib, id_add_one_arg_setter, 1, klass);
+    return rb_funcall(rbg_mGLib(), id_add_one_arg_setter, 1, klass);
 }
 
 void

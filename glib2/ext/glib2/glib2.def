@@ -76,11 +76,14 @@ EXPORTS
 	g_rclosure_new
 	g_rclosure_new_call
 	g_rclosure_attach
+	g_rclosure_attach_gobject
 	g_rclosure_set_tag
 	rbgobj_ruby_value_get_type
 	g_value_get_ruby_value
 	g_value_set_ruby_value
 	g_key_file_get_type
+	rbg_mGLib
+	rbg_cGLibObject
 	rbg_rval_inspect
 	rbg_string_value_ptr
 	rbg_rval2cstr
@@ -127,6 +130,7 @@ EXPORTS
 	rbg_rval2glist
 	rbg_rval2gslist
 	rbg_define_method
+	rbg_define_private_method
 	rbg_define_singleton_method
 	rbg_to_array
 	rbg_to_hash

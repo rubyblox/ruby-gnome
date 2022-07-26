@@ -1,6 +1,6 @@
 /* -*- c-file-style: "ruby"; indent-tabs-mode: nil -*- */
 /*
- *  Copyright (C) 2002-2021  Ruby-GNOME Project Team
+ *  Copyright (C) 2002-2022  Ruby-GNOME Project Team
  *  Copyright (C) 2002-2003  Masahiro Sakai
  *  Copyright (C) 1998-2000  Yukihiro Matsumoto,
  *                           Daisuke Kanda,
@@ -29,6 +29,12 @@
 VALUE RG_TARGET_NAMESPACE;
 static VALUE eNoPropertyError;
 static GQuark RUBY_GOBJECT_OBJ_KEY;
+
+VALUE
+rbg_cGLibObject(void)
+{
+    return RG_TARGET_NAMESPACE;
+}
 
 gboolean
 rbg_is_object(VALUE object)
@@ -309,6 +315,12 @@ rg_s_new_bang(int argc, VALUE *argv, VALUE self)
     g_object_unref(gobj);
 
     return result;
+}
+
+static VALUE
+rg_s_init(int argc, VALUE *argv, VALUE self)
+{
+    return RUBY_Qnil;
 }
 
 struct param_setup_arg {
@@ -872,6 +884,15 @@ rg_initialize(int argc, VALUE *argv, VALUE self)
     gobj = rbgobj_gobject_new(RVAL2GTYPE(self), params_hash);
 
     G_INITIALIZE(self, gobj);
+
+    rb_funcall(self, rb_intern("initialize_post"), 0);
+
+    return Qnil;
+}
+
+static VALUE
+rg_initialize_post(VALUE self)
+{
     return Qnil;
 }
 
@@ -956,6 +977,9 @@ rbgobj_class_init_func(gpointer g_class, G_GNUC_UNUSED gpointer class_data)
 
     g_object_class->set_property = set_prop_func;
     g_object_class->get_property = get_prop_func;
+
+    VALUE rb_class = GTYPE2CLASS(G_TYPE_FROM_CLASS(g_class));
+    rb_funcall(rb_class, rb_intern("init"), 0);
 }
 
 void
@@ -1062,17 +1086,19 @@ rg_s_type_register(int argc, VALUE *argv, VALUE self)
 void
 Init_gobject_gobject(void)
 {
-    RG_TARGET_NAMESPACE = G_DEF_CLASS_WITH_GC_FUNC(G_TYPE_OBJECT, "Object", mGLib,
+    RG_TARGET_NAMESPACE = G_DEF_CLASS_WITH_GC_FUNC(G_TYPE_OBJECT, "Object", rbg_mGLib(),
                                                   gobj_mark, NULL);
 
 #ifdef G_TYPE_INITIALLY_UNOWNED
-    G_DEF_CLASS(G_TYPE_INITIALLY_UNOWNED, "InitiallyUnowned", mGLib);
+    G_DEF_CLASS(G_TYPE_INITIALLY_UNOWNED, "InitiallyUnowned", rbg_mGLib());
 #endif
 
     RUBY_GOBJECT_OBJ_KEY = g_quark_from_static_string("__ruby_gobject_object__");
 
     rb_define_alloc_func(RG_TARGET_NAMESPACE, rbgobj_object_alloc_func);
     RG_DEF_SMETHOD_BANG(new, -1);
+
+    RG_DEF_SMETHOD(init, 0);
 
     rbg_define_singleton_method(RG_TARGET_NAMESPACE, "property", &gobj_s_property, 1);
     rbg_define_singleton_method(RG_TARGET_NAMESPACE, "properties", &gobj_s_properties, -1);
@@ -1089,6 +1115,7 @@ Init_gobject_gobject(void)
     RG_DEF_METHOD_P(destroyed, 0);
 
     RG_DEF_METHOD(initialize, -1);
+    RG_DEF_PRIVATE_METHOD(initialize_post, 0);
     rbg_define_method(RG_TARGET_NAMESPACE, "ref_count", gobj_ref_count, 0); /* for debugging */
     RG_DEF_METHOD_P(floating, 0); /* for debugging */
     RG_DEF_METHOD(unref, 0);
@@ -1096,9 +1123,9 @@ Init_gobject_gobject(void)
     RG_DEF_METHOD(type_name, 0);
 
     RG_DEF_METHOD(bind_property, -1);
-    G_DEF_CLASS(G_TYPE_BINDING_FLAGS, "BindingFlags", mGLib);
+    G_DEF_CLASS(G_TYPE_BINDING_FLAGS, "BindingFlags", rbg_mGLib());
 
-    eNoPropertyError = rb_define_class_under(mGLib, "NoPropertyError",
+    eNoPropertyError = rb_define_class_under(rbg_mGLib(), "NoPropertyError",
                                              rb_eNameError);
 
     rbg_type_to_prop_setter_tables =
