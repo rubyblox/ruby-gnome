@@ -75,6 +75,7 @@ Init_gio2 (void)
 
     rb_gio2_init_application(RG_TARGET_NAMESPACE);
     rb_gio2_init_pollable_source(RG_TARGET_NAMESPACE);
+    rb_gio2_init_action_group(RG_TARGET_NAMESPACE);
 
     rbgobj_register_mark_func(G_TYPE_ACTION, rb_gio2_action_mark);
     rbgobj_register_mark_func(G_TYPE_APPLICATION, rb_gio2_application_mark);
